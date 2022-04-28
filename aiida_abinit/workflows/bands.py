@@ -70,16 +70,16 @@ class AbinitBandsWorkChain(WorkChain):
         spec.exit_code(
             201,
             'ERROR_INVALID_INPUT_NUMBER_OF_BANDS',
-            message='Cannot specify both `nbands_factor` and `bands.pw.parameters.SYSTEM.nbnd`.'
+            message='Cannot specify both `nbands_factor` and `bands.abinit.parameters.nband`.'
         )
         spec.exit_code(
             202,
             'ERROR_INVALID_INPUT_KPOINTS',
             message='Cannot specify both `nscf_kpoints` and `nscf_kpoints_distance`.'
         )
-        spec.exit_code(401, 'ERROR_SUB_PROCESS_FAILED_RELAX', message='The PwRelaxWorkChain sub process failed')
-        spec.exit_code(402, 'ERROR_SUB_PROCESS_FAILED_SCF', message='The scf PwBasexWorkChain sub process failed')
-        spec.exit_code(403, 'ERROR_SUB_PROCESS_FAILED_BANDS', message='The bands PwBasexWorkChain sub process failed')
+        spec.exit_code(401, 'ERROR_SUB_PROCESS_FAILED_RELAX', message='The relax AbinitBaseWorkChain sub process failed')
+        spec.exit_code(402, 'ERROR_SUB_PROCESS_FAILED_SCF', message='The SCF AbinitBaseWorkChain sub process failed')
+        spec.exit_code(403, 'ERROR_SUB_PROCESS_FAILED_BANDS', message='The NSCF AbinitBaseWorkChain sub process failed')
 
         spec.output(
             'primitive_structure',
