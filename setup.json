@@ -18,7 +18,8 @@
             "abinit = aiida_abinit.parsers:AbinitParser"
         ],
 	    "aiida.workflows": [
-	        "abinit.base = aiida_abinit.workflows.base:AbinitBaseWorkChain"
+	        "abinit.base = aiida_abinit.workflows.base:AbinitBaseWorkChain",
+            "abinit.bands = aiida_abinit.workflows.bands:AbinitBandsWorkChain"
 	    ]
     },
     "extras_require": {

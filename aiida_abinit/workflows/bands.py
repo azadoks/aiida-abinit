@@ -12,7 +12,9 @@ AbinitBaseWorkChain = WorkflowFactory('abinit.base')
 
 def validate_inputs(inputs, ctx=None):  # pylint: disable=unused-argument
     """Validate input parameters."""
-
+    # pylint: disable=fixme
+    # TODO: check that tolwfr is set
+    # TODO: check that nstep is unset
     return
 
 
@@ -23,7 +25,7 @@ class AbinitBandsWorkChain(WorkChain):
     def define(cls, spec):
         """Define the process specification."""
         super().define(spec)
-        spec.expose_inputs(AbinitBaseWorkChain, namespace='base', exclude=('clean_workdir', 'abinit.structure'))
+        spec.expose_inputs(AbinitBaseWorkChain, namespace='relax', exclude=('clean_workdir', 'abinit.structure'))
         spec.expose_inputs(AbinitBaseWorkChain, namespace='scf', exclude=('clean_workdir', 'abinit.structure'))
         spec.expose_inputs(
             AbinitBaseWorkChain,
@@ -95,7 +97,7 @@ class AbinitBandsWorkChain(WorkChain):
             'scf_parameters', valid_type=orm.Dict, help='The output parameters of the SCF `AbinitBaseWorkChain`.'
         )
         spec.output(
-            'band_parameters', valid_type=orm.Dict, help='The output parameters of the BANDS `AbinitBaseWorkChain`.'
+            'nscf_parameters', valid_type=orm.Dict, help='The output parameters of the NSCF `AbinitBaseWorkChain`.'
         )
         spec.output('band_structure', valid_type=orm.BandsData, help='The computed band structure.')
 
@@ -117,7 +119,7 @@ class AbinitBandsWorkChain(WorkChain):
         """Run the AbinitBaseWorkChain to run a relax AbinitCalculation."""
         inputs = AttributeDict(self.exposed_inputs(AbinitBaseWorkChain, namespace='relax'))
         inputs.metadata.call_link_label = 'relax'
-        inputs.structure = self.ctx.current_structure
+        inputs.abinit.structure = self.ctx.current_structure
 
         running = self.submit(AbinitBaseWorkChain, **inputs)
 
@@ -159,7 +161,7 @@ class AbinitBandsWorkChain(WorkChain):
         inputs = AttributeDict(self.exposed_inputs(AbinitBaseWorkChain, namespace='scf'))
         inputs.metadata.call_link_label = 'scf'
         inputs.abinit.structure = self.ctx.current_structure
-        inputs.abinit.parameters = inputs.abinit.parameters.get_dict()
+        parameters = inputs.abinit.parameters.get_dict()
         # Need to check `usepaw` (iscf -> 17), usewvl (iscf -> 1), iscf -> 7 otherwise to ensure SCF calc.
         # inputs.abinit.parameters.setdefault('iscf', )
         # inputs.pw.parameters.setdefault('CONTROL', {})['calculation'] = 'scf'
@@ -168,7 +170,9 @@ class AbinitBandsWorkChain(WorkChain):
         # in the inputs. One of the base workchains in the relax workchain may have changed the number automatically in
         #  the sanity checks on band occupations.
         if self.ctx.current_number_of_bands:
-            inputs.abinit.parameters.setdefault('nband', self.ctx.current_number_of_bands)
+            parameters.setdefault('nband', self.ctx.current_number_of_bands)
+
+        inputs.abinit.parameters = orm.Dict(dict=parameters)
 
         running = self.submit(AbinitBaseWorkChain, **inputs)
 
@@ -191,46 +195,48 @@ class AbinitBandsWorkChain(WorkChain):
 
     def run_nscf(self):
         """Run the AbinitBaseWorkChain in nscf mode along the path of high-symmetry determined by seekpath."""
-        inputs = AttributeDict(self.exposed_inputs(AbinitBaseWorkChain, namespace='bands'))
+        inputs = AttributeDict(self.exposed_inputs(AbinitBaseWorkChain, namespace='nscf'))
         inputs.metadata.call_link_label = 'bands'
         inputs.kpoints = self.ctx.nscf_kpoints
         inputs.abinit.structure = self.ctx.current_structure
         inputs.abinit.parent_folder = self.ctx.current_folder
-        inputs.abinit.parameters = inputs.abinit.parameters.get_dict()
+        parameters = inputs.abinit.parameters.get_dict()
 
         # The following flags always have to be set in the parameters, regardless of what caller specified in the inputs
-        inputs.abinit.parameters['iscf'] = -2
+        parameters['irdden'] = 1  # Do a restart calculation
+        parameters['iscf'] = -2  # Do an nscf calculation
 
         # Only set the following parameters if not directly explicitly defined in the inputs
-        inputs.abinit.parameters.setdefault('rmm_diis', 0)
-        inputs.abinit.parameters.setdefault('paral_kgb', 0)
+        parameters.setdefault('rmm_diis', 0)
+        # parameters.setdefault('paral_kgb', 0)
 
         # If `nbands_factor` is defined in the inputs we set the `nband` parameter
         if 'nbands_factor' in self.inputs:
             factor = self.inputs.nbands_factor.value
-            parameters = self.ctx.workchain_scf.outputs.output_parameters.get_dict()
-            nspin_factor = int(parameters['nspinor'])
-            nbands = int(parameters['nband'])
-            nelectron = int(parameters['nelect'])
+            scf_parameters = self.ctx.workchain_scf.outputs.output_parameters.get_dict()
+            nspin_factor = int(scf_parameters['nspinor'])
+            nbands = int(scf_parameters['nband'])
+            nelectron = int(scf_parameters['nelect'])
             nband = max(
                 int(0.5 * nelectron * nspin_factor * factor),
                 int(0.5 * nelectron * nspin_factor) + 4 * nspin_factor, nbands
             )
-            inputs.abinit.parameters['nband'] = nband
-
+            parameters['nband'] = nband
         # Otherwise set the current number of bands, unless explicitly set in the inputs
         else:
-            inputs.abinit.parameters.setdefault('nband', self.ctx.current_number_of_bands)
+            parameters.setdefault('nband', self.ctx.current_number_of_bands)
+
+        inputs.abinit.parameters = orm.Dict(dict=parameters)
 
         running = self.submit(AbinitBaseWorkChain, **inputs)
 
         self.report(f'launching AbinitBaseWorkChain<{running.pk}> `nscf`')
 
-        return ToContext(workchain_bands=running)
+        return ToContext(workchain_nscf=running)
 
-    def inspect_bands(self):
-        """Verify that the AbinitBaseWorkChain for the bands run finished successfully."""
-        workchain = self.ctx.workchain_bands
+    def inspect_nscf(self):
+        """Verify that the AbinitBaseWorkChain for the nscf run finished successfully."""
+        workchain = self.ctx.workchain_nscf
 
         if not workchain.is_finished_ok:
             self.report(
@@ -243,7 +249,7 @@ class AbinitBandsWorkChain(WorkChain):
         self.report('workchain succesfully completed')
         self.out('scf_parameters', self.ctx.workchain_scf.outputs.output_parameters)
         self.out('nscf_parameters', self.ctx.workchain_nscf.outputs.output_parameters)
-        self.out('nscf_structure', self.ctx.workchain_nscf.outputs.output_band)
+        self.out('band_structure', self.ctx.workchain_nscf.outputs.output_bands)
 
     def on_terminated(self):
         """Clean the working directories of all child calculations if `clean_workdir=True` in the inputs."""
