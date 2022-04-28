@@ -2,5 +2,6 @@
 """Workchains."""
 
 from .base import AbinitBaseWorkChain
+from .bands import AbinitBandsWorkChain
 
-__all__ = ('AbinitBaseWorkChain',)
+__all__ = ('AbinitBaseWorkChain', 'AbinitBandsWorkChain')

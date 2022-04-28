@@ -81,7 +81,7 @@ class AbinitCalculation(CalcJob):
                    valid_type=orm.Dict,
                    required=False,
                    help='Various special settings.')
-        spec.input('parent_calc_folder',
+        spec.input('parent_folder',
                    valid_type=orm.RemoteData,
                    required=False,
                    help='A remote folder used for restarts.')
@@ -187,7 +187,7 @@ class AbinitCalculation(CalcJob):
         """
         local_copy_pseudo_list = []
 
-        # `abipy`` has its own subclass of Pymatgen's `Structure`, so we use that
+        # `abipy` has its own subclass of Pymatgen's `Structure`, so we use that
         pmg_structure = structure.get_pymatgen()
         abi_structure = AbiStructure.as_structure(pmg_structure)
         # NOTE: need to refine the `abi_sanitize` parameters
@@ -208,7 +208,7 @@ class AbinitCalculation(CalcJob):
 
         input_parameters = parameters.get_dict()
 
-        # Use `abipy`` to write the input file
+        # Use `abipy` to write the input file
         input_parameters = {**input_parameters, **pseudo_parameters}
 
         # `AbinitInput` requires a valid pseudo table / list of pseudos, so we give it the `HGH_TABLE`,
@@ -324,14 +324,14 @@ class AbinitCalculation(CalcJob):
             if settings.pop('PARENT_FOLDER_SYMLINK', same_computer):
                 remote_symlink_list.append((
                     self.inputs.parent_folder.computer.uuid,
-                    os.path.join(self.inputs.parent_folder.get_remote_path(), '*'),
-                    './')
+                    os.path.join(self.inputs.parent_folder.get_remote_path(), f'{self._DEFAULT_PREFIX}o_DEN'),
+                    f'./{self._DEFAULT_PREFIX}i_DEN')
                 )
             else:
                 remote_copy_list.append((
                     self.inputs.parent_folder.computer.uuid,
-                    os.path.join(self.inputs.parent_folder.get_remote_path(), '*'),
-                    './')
+                    os.path.join(self.inputs.parent_folder.get_remote_path(), f'{self._DEFAULT_PREFIX}o_DEN'),
+                    f'./{self._DEFAULT_PREFIX}i_DEN')
                 )
 
         # Generate the commandline parameters

@@ -88,9 +88,8 @@ class AbinitBaseWorkChain(BaseRestartWorkChain):
         the case of the latter, the `KpointsData` will be constructed for the input `StructureData` using the
         `create_kpoints_from_distance` calculation function.
         """
-        for key in ['kpoints', 'kpoints_distance']:
-            if key in self.inputs:
-                return self.exit_codes.ERROR_INVALID_INPUT_KPOINTS # pylint: disable=no-member
+        if 'kpoints' in self.inputs and 'kpoints_distance' in self.inputs:  # pylint: disable=no-member
+            return self.exit_codes.ERROR_INVALID_INPUT_KPOINTS
 
         try:
             kpoints = self.inputs.kpoints
@@ -138,11 +137,11 @@ class AbinitBaseWorkChain(BaseRestartWorkChain):
         `restart_mode` is set to `from_scratch`.
         """
         if self.ctx.restart_calc:
-            self.ctx.inputs.parameters['restartxf'] = -2
+            self.ctx.inputs.parameters['irdden'] = 1
             self.ctx.inputs.parent_folder = self.ctx.restart_calc.outputs.remote_folder
-        else:
-            # Explicitly set that this is not a restart; makes querying easier
-            self.ctx.inputs.parameters['restartxf'] = 0
+        # else:
+        #     # Explicitly set that this is not a restart; makes querying easier
+        #     self.ctx.inputs.parameters['irdden'] = 0
 
     def report_error_handled(self, calculation, action):
         """Report an action taken for a calculation that has failed.
