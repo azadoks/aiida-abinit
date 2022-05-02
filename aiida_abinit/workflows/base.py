@@ -53,10 +53,12 @@ class AbinitBaseWorkChain(BaseRestartWorkChain):
 
         spec.exit_code(201, 'ERROR_INVALID_INPUT_PSEUDO_POTENTIALS',
             message='`pseudos` could not be used to get the necessary pseudos.')
-        spec.exit_code(202, 'ERROR_INVALID_INPUT_KPOINTS',
-            message='Neither the `kpoints` nor the `kpoints_distance` input was specified.')
+        spec.exit_code(201, 'ERROR_CONFLICTING_INPUT_KPOINTS',
+            message='Both `kpoints` and `kpoints_distance` were specified.')
+        spec.exit_code(202, 'ERROR_MISSING_INPUT_KPOINTS',
+            message='Neither `kpoints` nor `kpoints_distance` were specified.')
         spec.exit_code(203, 'ERROR_INVALID_INPUT_RESOURCES',
-            message='Neither the `options` nor `automatic_parallelization` input was specified.')
+            message='Specified `resources` input is invalid.')
         spec.exit_code(204, 'ERROR_INVALID_INPUT_RESOURCES_UNDERSPECIFIED',
             message='The `metadata.options` did not specify both `resources.num_machines` and `max_wallclock_seconds`.')
 
@@ -89,17 +91,20 @@ class AbinitBaseWorkChain(BaseRestartWorkChain):
         `create_kpoints_from_distance` calculation function.
         """
         if 'kpoints' in self.inputs and 'kpoints_distance' in self.inputs:  # pylint: disable=no-member
-            return self.exit_codes.ERROR_INVALID_INPUT_KPOINTS
+            return self.exit_codes.ERROR_CONFLICTING_INPUT_KPOINTS
+
+        if 'kpoints' not in self.inputs and 'kpoints_distance' not in self.inputs:
+            return self.exit_codes.ERROR_MISSING_INPUT_KPOINTS
 
         try:
             kpoints = self.inputs.kpoints
         except AttributeError:
-            inputs = {
+            kpoints_inputs = {
                 'structure': self.inputs.abinit.structure,
                 'distance': self.inputs.kpoints_distance,
                 'metadata': {'call_link_label': 'create_kpoints_from_distance'}
             }
-            kpoints = create_kpoints_from_distance(**inputs)  # pylint: disable=unexpected-keyword-arg
+            kpoints = create_kpoints_from_distance(**kpoints_inputs)  # pylint: disable=unexpected-keyword-arg
 
         self.ctx.inputs.kpoints = kpoints
 
@@ -139,9 +144,9 @@ class AbinitBaseWorkChain(BaseRestartWorkChain):
         if self.ctx.restart_calc:
             self.ctx.inputs.parameters['irdden'] = 1
             self.ctx.inputs.parent_folder = self.ctx.restart_calc.outputs.remote_folder
-        # else:
-        #     # Explicitly set that this is not a restart; makes querying easier
-        #     self.ctx.inputs.parameters['irdden'] = 0
+        else:
+            # Explicitly set that this is not a restart; makes querying easier
+            self.ctx.inputs.parameters['irdden'] = 0
 
     def report_error_handled(self, calculation, action):
         """Report an action taken for a calculation that has failed.
