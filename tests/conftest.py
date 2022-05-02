@@ -290,7 +290,7 @@ def generate_psp8_data():
         from aiida_pseudo.data.pseudo import Psp8Data
         from aiida.common.constants import elements
         try:
-            atomic_number = [number for number in elements if elements[number]['symbol'] == element]
+            atomic_number = [number for number, element_dict in elements.items() if element_dict['symbol'] == element]
             atomic_number = float(atomic_number[0])
         except IndexError as error:
             raise ValueError(f'Could not associate an atomic number to {element}.') from error
@@ -326,7 +326,7 @@ def generate_structure():
             structure.append_atom(position=[-29.3865565, 9.51707929, -4.02515904], symbols='H', name='H')
             structure.append_atom(position=[1.04074437, -1.64320127, -1.27035021], symbols='O', name='O')
         else:
-            raise KeyError('Unknown structure_id=\'{}\''.format(structure_id))
+            raise KeyError(f'Unknown structure_id=\'{structure_id}\'')
         return structure
 
     return _generate_structure

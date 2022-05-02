@@ -16,6 +16,7 @@ from aiida.engine import run
 from aiida.orm import Bool, Float, Dict, Group, StructureData
 from aiida_abinit.workflows.bands import AbinitBandsWorkChain
 
+
 # %%
 def example_bands(code, pseudo_family):
     """Run silicon bands calculation."""
@@ -45,19 +46,25 @@ def example_bands(code, pseudo_family):
         'relax': {
             'kpoints_distance': Float(0.10),
             'abinit': {
-                'code': code,
-                'pseudos': pseudos,
-                'parameters': Dict(dict={
-                    'ecut': 36.0,
-                    'nstep': 50,
-                    'toldfe': 1e-8,
-                    'ionmov': 22,
-                    'optcell': 2,
-                    'ntime': 50,
-                    'ecutsm': 0.05,
-                    'dilatmx': 1.05
-                }),
-                'metadata': metadata
+                'code':
+                code,
+                'pseudos':
+                pseudos,
+                'parameters':
+                Dict(
+                    dict={
+                        'ecut': 36.0,
+                        'nstep': 50,
+                        'toldfe': 1e-8,
+                        'ionmov': 22,
+                        'optcell': 2,
+                        'ntime': 50,
+                        'ecutsm': 0.05,
+                        'dilatmx': 1.05
+                    }
+                ),
+                'metadata':
+                metadata
             }
         },
         'scf': {
@@ -88,25 +95,8 @@ def example_bands(code, pseudo_family):
 
     print('Running workchain...')
     return run(AbinitBandsWorkChain, **bands_parameters_dict)
-# %%
-import matplotlib.pyplot as plt
-from aiida import orm, load_profile
-load_profile('base')
 
-code = orm.load_code('abinit-9.6.2-openmpi@zookspc-slurm')
-pseudo_family = 'PseudoDojo/0.4/PBE/SR/standard/psp8'
 
-outputs = example_bands(code, pseudo_family)
-# %%
-bs = outputs['band_structure']
-bands = bs.get_bands()[0]
-
-fig, ax = plt.subplots(dpi=300)
-for band in bands.T:
-    ax.plot(band, marker='.', markersize=1, linewidth=1, c='k')
-
-ax.set_xticks([0, 56, 75, 76, 135, 183, 222, 249])
-ax.set_xticklabels(['$\Gamma$', 'X', 'U', 'K', '$\Gamma$', 'L', 'W', 'X'])
 # %%
 PSEUDO_FAMILY = cmdline.params.options.OverridableOption(
     '-P', '--pseudo_family', help='Psp8Family identified by its label'
