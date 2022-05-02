@@ -15,7 +15,7 @@ FILEPATH_SETUP_JSON = os.path.join(FILEPATH_ROOT, FILENAME_SETUP_JSON)
 
 def get_setup_json():
     """Return the `setup.json` as a python dictionary."""
-    with open(FILEPATH_SETUP_JSON, 'r') as handle:
+    with open(FILEPATH_SETUP_JSON, 'r', encoding='utf8') as handle:
         setup_json = json.load(handle)
 
     return setup_json
@@ -42,7 +42,7 @@ def validate_version():
         click.echo(f"Updating version in '{FILENAME_SETUP_JSON}' to: {version}")
 
         setup_content['version'] = version
-        with open(FILEPATH_SETUP_JSON, 'w') as handle:
+        with open(FILEPATH_SETUP_JSON, 'w', encoding='utf8') as handle:
             # Write with indentation of two spaces and explicitly define separators to not have spaces at end of lines
             json.dump(setup_content, handle, indent=4, separators=(',', ': '))
 

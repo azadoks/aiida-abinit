@@ -77,7 +77,9 @@ class AbinitBandsWorkChain(WorkChain):
             'ERROR_INVALID_INPUT_KPOINTS',
             message='Cannot specify both `nscf_kpoints` and `nscf_kpoints_distance`.'
         )
-        spec.exit_code(401, 'ERROR_SUB_PROCESS_FAILED_RELAX', message='The relax AbinitBaseWorkChain sub process failed')
+        spec.exit_code(
+            401, 'ERROR_SUB_PROCESS_FAILED_RELAX', message='The relax AbinitBaseWorkChain sub process failed'
+        )
         spec.exit_code(402, 'ERROR_SUB_PROCESS_FAILED_SCF', message='The SCF AbinitBaseWorkChain sub process failed')
         spec.exit_code(403, 'ERROR_SUB_PROCESS_FAILED_BANDS', message='The NSCF AbinitBaseWorkChain sub process failed')
 
