@@ -197,7 +197,7 @@ def generate_calc_job_node(fixture_localhost):
         inputs=None,
         attributes=None,
         retrieve_temporary=None
-    ):  # pylint: disable=too-many-positional-arguments
+    ):  # pylint: disable=too-many-arguments
         """Fixture to generate a mock `CalcJobNode` for testing parsers.
 
         :param entry_point_name: entry point name of the calculation class
@@ -241,7 +241,7 @@ def generate_calc_job_node(fixture_localhost):
             from abipy.abio.abivars import AbinitInputFile
             from aiida.orm import StructureData
             try:
-                parsed_input = AbinitInputFile(filepath_input)  # pylint: disable=possibly-used-before-assignment
+                parsed_input = AbinitInputFile(filepath_input)
             except FileNotFoundError:
                 pass
             else:

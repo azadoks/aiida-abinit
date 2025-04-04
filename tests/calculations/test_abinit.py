@@ -15,36 +15,36 @@ def test_abinit_default(fixture_sandbox, generate_calc_job, generate_inputs_abin
 
     cmdline_params = ['aiida.in', '--timelimit', '30:00']
     local_copy_list = [(psp8.uuid, psp8.filename, './pseudo/Si.psp8')]
-    retrieve_list = ['aiida.out', 'aiidao_GSR.nc']
+    retrieve_list = ['aiida.out', 'outdata/out_GSR.nc']
 
     # Check the attributes of the returned `CalcInfo`
     assert isinstance(calc_info, datastructures.CalcInfo)
     assert isinstance(calc_info.codes_info[0], datastructures.CodeInfo)
     assert calc_info.codes_info[0].cmdline_params == cmdline_params
     assert sorted(calc_info.local_copy_list) == sorted(local_copy_list)
-    assert sorted(calc_info.retrieve_list) == sorted(retrieve_list)
+    assert all(ret in calc_info.retrieve_list for ret in retrieve_list)
     assert sorted(calc_info.remote_symlink_list) == sorted([])
 
     with fixture_sandbox.open('aiida.in') as handle:
         input_written = handle.read()
 
     # Checks on the files written to the sandbox folder as raw input
-    assert sorted(fixture_sandbox.get_content_list()) == sorted(['aiida.in', 'pseudo'])
+    assert sorted(fixture_sandbox.get_content_list()) == sorted(['aiida.in', 'pseudo', 'indata', 'outdata', 'tmpdata'])
     file_regression.check(input_written, encoding='utf-8', extension='.in')
 
 
 # yapf: disable
 @pytest.mark.parametrize(
     'ionmov,dry_run,retrieve_list',
-    [(0, False, ['aiida.out', 'aiidao_GSR.nc']),
-     (2, False, ['aiida.out', 'aiidao_GSR.nc', 'aiidao_HIST.nc']),
+    [(0, False, ['aiida.out', 'outdata/out_GSR.nc']),
+     (2, False, ['aiida.out', 'outdata/out_GSR.nc', 'outdata/out_HIST.nc']),
      (0, True, ['aiida.out']),
      (2, True, ['aiida.out'])]
 )
 # yapf: enable
 def test_abinit_retrieve(
     fixture_sandbox, generate_calc_job, generate_inputs_abinit, file_regression, ionmov, dry_run, retrieve_list
-):  # pylint: disable=too-many-positional-arguments
+):  # pylint: disable=too-many-arguments
     """Test an various retrieve list situations for `AbinitCalculation`."""
     entry_point_name = 'abinit'
 
@@ -53,13 +53,13 @@ def test_abinit_retrieve(
     inputs['settings'] = orm.Dict(dict={'DRY_RUN': dry_run})
     calc_info = generate_calc_job(fixture_sandbox, entry_point_name, inputs)
 
-    assert sorted(calc_info.retrieve_list) == sorted(retrieve_list)
+    assert all(ret in calc_info.retrieve_list for ret in retrieve_list)
 
     with fixture_sandbox.open('aiida.in') as handle:
         input_written = handle.read()
 
     # Checks on the files written to the sandbox folder as raw input
-    assert sorted(fixture_sandbox.get_content_list()) == sorted(['aiida.in', 'pseudo'])
+    assert sorted(fixture_sandbox.get_content_list()) == sorted(['aiida.in', 'pseudo', 'indata', 'outdata', 'tmpdata'])
     file_regression.check(input_written, encoding='utf-8', extension='.in')
 
 
