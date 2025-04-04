@@ -8,7 +8,6 @@ import pathlib as pl
 from abipy.dynamics.hist import HistFile
 from abipy.flowtk import events
 from abipy import abilab
-from abipy.abio.inputs import _DATA_PREFIX
 import netCDF4 as nc
 import numpy as np
 from pymatgen.core import units
