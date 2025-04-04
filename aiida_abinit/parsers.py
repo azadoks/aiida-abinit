@@ -3,10 +3,12 @@
 from os import path
 from tempfile import TemporaryDirectory
 import logging
+import pathlib as pl
 
 from abipy.dynamics.hist import HistFile
 from abipy.flowtk import events
 from abipy import abilab
+from abipy.abio.inputs import _DATA_PREFIX
 import netCDF4 as nc
 import numpy as np
 from pymatgen.core import units
@@ -57,7 +59,6 @@ class AbinitParser(Parser):
         optcell = parameters.get('optcell', 0)
         is_relaxation = ionmov != 0 or optcell != 0
 
-        prefix = self.node.get_attribute('prefix')
         retrieve_list = self.node.get_attribute('retrieve_list')
         output_filename = self.node.get_attribute('output_filename')
         with TemporaryDirectory() as dirpath:
@@ -73,14 +74,14 @@ class AbinitParser(Parser):
             else:
                 return self.exit_codes.ERROR_OUTPUT_MISSING
 
-            if f'{prefix}o_GSR.nc' in retrieve_list:
-                gsr_filepath = path.join(dirpath, f'{prefix}o_GSR.nc')
+            if (pl.Path(dirpath) / 'out_GSR.nc').exists():
+                gsr_filepath = path.join(dirpath, 'out_GSR.nc')
                 self._parse_gsr(gsr_filepath, is_relaxation)
             else:
                 return self.exit_codes.ERROR_MISSING_GSR_OUTPUT_FILE
 
-            if f'{prefix}o_HIST.nc' in retrieve_list:
-                hist_filepath = path.join(dirpath, f'{prefix}o_HIST.nc')
+            if (pl.Path(dirpath) / 'out_HIST.nc').exists():
+                hist_filepath = path.join(dirpath, 'out_HIST.nc')
                 self._parse_trajectory(hist_filepath)
             else:
                 if is_relaxation:

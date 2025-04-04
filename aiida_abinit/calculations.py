@@ -3,9 +3,10 @@
 import io
 import os
 import typing as ty
+import pathlib as pl
 
 from pymatgen.io.abinit.abiobjects import structure_to_abivars
-from abipy.abio.inputs import AbinitInput
+from abipy.abio.inputs import AbinitInput, _DATA_PREFIX
 from abipy.core.structure import Structure as AbiStructure
 from abipy.data.hgh_pseudos import HGH_TABLE
 
@@ -99,9 +100,9 @@ class AbinitCalculation(CalcJob):
         spec.exit_code(100, 'ERROR_MISSING_OUTPUT_FILES',
                        message='Calculation did not produce all expected output files.')
         spec.exit_code(101, 'ERROR_MISSING_GSR_OUTPUT_FILE',
-                       message='Calculation did not produce the expected `[prefix]o_GSR.nc` output file.')
+                       message='Calculation did not produce the expected `GSR.nc` output file.')
         spec.exit_code(102, 'ERROR_MISSING_HIST_OUTPUT_FILE',
-                       message='Calculation did not produce the expected `[prefix]o_HIST.nc` output file.')
+                       message='Calculation did not produce the expected `HIST.nc` output file.')
         # Unrecoverable errors: resources like the retrieved folder or its expected contents are missing.
         spec.exit_code(200, 'ERROR_NO_RETRIEVED_FOLDER',
                        message='The retrieved folder data node could not be accessed.')
@@ -272,11 +273,11 @@ class AbinitCalculation(CalcJob):
 
         # NOTE: pop here, we don't need this setting anymore
         if not settings.pop('DRY_RUN', False):
-            # In all cases except for dry runs: o_GSR.nc
-            retrieve_list += [f'{prefix}{postfix}' for postfix in ['o_GSR.nc']]
-            # When moving ions: o_HIST.nc
+            # In all cases except for dry runs: _GSR.nc
+            retrieve_list += [f'{_DATA_PREFIX["outdata_prefix"]}{postfix}' for postfix in ['_GSR.nc']]
+            # When moving ions: _HIST.nc
             if parameters.get('ionmov', 0) > 0:
-                retrieve_list += [f'{prefix}{postfix}' for postfix in ['o_HIST.nc']]
+                retrieve_list += [f'{_DATA_PREFIX["outdata_prefix"]}{postfix}' for postfix in ['_HIST.nc']]
 
         # There may be duplicates from the `ADDITIONAL_RETRIEVE_LIST` setting, so clean up using set()
         return list(set(retrieve_list))
@@ -302,6 +303,8 @@ class AbinitCalculation(CalcJob):
 
         # Create the subfolder which will contain the pseudopotential files
         folder.get_subfolder(self._PSEUDO_SUBFOLDER, create=True)
+        for value in _DATA_PREFIX.values():
+            folder.get_subfolder(str(pl.Path(value).parent), create=True)
 
         # Generate the input file content and list of pseudopotential files to copy
         arguments = [
