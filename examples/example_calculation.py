@@ -8,11 +8,12 @@ Usage: python example_dft.py --code abinit-9.2.1-ab@localhost --pseudo_family ps
 """
 import os
 
-import click
-import pymatgen as mg
 from aiida import cmdline
 from aiida.engine import run
-from aiida.orm import Dict, Group, StructureData, KpointsData
+from aiida.orm import Dict, Group, KpointsData, StructureData
+import click
+import pymatgen as mg
+
 from aiida_abinit.calculations import AbinitCalculation
 
 

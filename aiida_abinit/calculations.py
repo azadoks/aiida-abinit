@@ -2,20 +2,19 @@
 """CalcJob class for Abinit."""
 import io
 import os
-import typing as ty
 import pathlib as pl
+import typing as ty
 
-from pymatgen.io.abinit.abiobjects import structure_to_abivars
-from abipy.abio.inputs import AbinitInput, _DATA_PREFIX
+from abipy.abio.inputs import _DATA_PREFIX, AbinitInput
 from abipy.core.structure import Structure as AbiStructure
 from abipy.data.hgh_pseudos import HGH_TABLE
-
 from aiida import orm
 from aiida.common import constants, datastructures, exceptions
 from aiida.engine import CalcJob
-from aiida_pseudo.data.pseudo import Psp8Data, JthXmlData
+from aiida_pseudo.data.pseudo import JthXmlData, Psp8Data
+from pymatgen.io.abinit.abiobjects import structure_to_abivars
 
-from aiida_abinit.utils import uppercase_dict, seconds_to_timelimit
+from aiida_abinit.utils import seconds_to_timelimit, uppercase_dict
 
 
 class AbinitCalculation(CalcJob):

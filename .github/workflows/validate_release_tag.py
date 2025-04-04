@@ -31,5 +31,5 @@ if __name__ == '__main__':
     assert args.GITHUB_REF.startswith('refs/tags/v'), f'GITHUB_REF should start with "refs/tags/v": {args.GITHUB_REF}'
     tag_version = args.GITHUB_REF[11:]
     package_version = get_version_from_module(Path('aiida_abinit/__init__.py').read_text(encoding='utf-8'))
-    error_message = f'The tag version `{tag_version}` is different from the package version `{package_version}`'
+    error_message = f'The tag version `{tag_version}` is different from the package version `{package_version}`'  # pylint: disable=invalid-name
     assert tag_version == package_version, error_message

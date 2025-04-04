@@ -37,8 +37,8 @@ def _case_transform_dict(dictionary: dict, dict_name: str, func_name: str, trans
         num_items = Counter(transform(str(k)) for k in dictionary.keys())
         double_keys = ','.join([k for k, v in num_items if v > 1])
         raise exceptions.InputValidationError(
-            "Inside the dictionary '{}' there are the following keys that "
-            'are repeated more than once when compared case-insensitively: {}.'
-            'This is not allowed.'.format(dict_name, double_keys)
+            f"Inside the dictionary '{dict_name}' there are the following keys that "
+            f'are repeated more than once when compared case-insensitively: {double_keys}.'
+            'This is not allowed.'
         )
     return new_dict

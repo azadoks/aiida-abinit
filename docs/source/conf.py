@@ -15,8 +15,9 @@ import os
 import sys
 import time
 
-import aiida_abinit
 from aiida.manage.configuration import load_documentation_profile
+
+import aiida_abinit
 
 # -- AiiDA-related setup --------------------------------------------------
 

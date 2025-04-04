@@ -8,11 +8,12 @@ Usage: python ./example_base.py --code abinit-9.2.1-ab@localhost --pseudo_family
 """
 import os
 
-import click
-import pymatgen as pmg
 from aiida import cmdline
 from aiida.engine import run
-from aiida.orm import Float, Dict, Group, StructureData
+from aiida.orm import Dict, Float, Group, StructureData
+import click
+import pymatgen as pmg
+
 from aiida_abinit.workflows.base import AbinitBaseWorkChain
 
 

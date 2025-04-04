@@ -3,7 +3,7 @@
 import typing as ty
 
 from aiida import orm
-from aiida_pseudo.data.pseudo import Psp8Data, JthXmlData
+from aiida_pseudo.data.pseudo import JthXmlData, Psp8Data
 
 __all__ = ('validate_and_prepare_pseudos_inputs',)
 

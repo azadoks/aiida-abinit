@@ -8,11 +8,12 @@ Usage: python ./example_relax.py --code abinit-9.2.1-ab@localhost --pseudo_famil
 """
 import os
 
-import click
-import pymatgen as pmg
 from aiida import cmdline
 from aiida.engine import run
-from aiida.orm import Dict, Group, Float, StructureData
+from aiida.orm import Dict, Float, Group, StructureData
+import click
+import pymatgen as pmg
+
 from aiida_abinit.workflows.base import AbinitBaseWorkChain
 
 

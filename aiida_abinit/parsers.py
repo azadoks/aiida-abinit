@@ -1,21 +1,20 @@
 # -*- coding: utf-8 -*-
 """AiiDA-abinit output parser."""
-from os import path
-from tempfile import TemporaryDirectory
 import logging
+from os import path
 import pathlib as pl
+from tempfile import TemporaryDirectory
 
+from abipy import abilab
 from abipy.dynamics.hist import HistFile
 from abipy.flowtk import events
-from abipy import abilab
-import netCDF4 as nc
-import numpy as np
-from pymatgen.core import units
-
 from aiida.common.exceptions import NotExistent
 from aiida.engine import ExitCode
 from aiida.orm import BandsData, Dict, StructureData, TrajectoryData
 from aiida.parsers.parser import Parser
+import netCDF4 as nc
+import numpy as np
+from pymatgen.core import units
 
 UNITS_SUFFIX = '_units'
 DEFAULT_CHARGE_UNITS = 'e'

@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
 """Tests for the `AbinitCalculation` class."""
-import pytest
-
 from aiida import orm
 from aiida.common import datastructures
+import pytest
 
 
 def test_abinit_default(fixture_sandbox, generate_calc_job, generate_inputs_abinit, file_regression):
@@ -45,7 +44,7 @@ def test_abinit_default(fixture_sandbox, generate_calc_job, generate_inputs_abin
 # yapf: enable
 def test_abinit_retrieve(
     fixture_sandbox, generate_calc_job, generate_inputs_abinit, file_regression, ionmov, dry_run, retrieve_list
-):
+):  # pylint: disable=too-many-positional-arguments
     """Test an various retrieve list situations for `AbinitCalculation`."""
     entry_point_name = 'abinit'
 

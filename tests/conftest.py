@@ -79,7 +79,7 @@ def serialize_builder():
 
     def serialize_data(data):
         # pylint: disable=too-many-return-statements
-        from aiida.orm import BaseType, Dict, AbstractCode
+        from aiida.orm import AbstractCode, BaseType, Dict
         from aiida.plugins import DataFactory
 
         StructureData = DataFactory('structure')
@@ -116,7 +116,7 @@ def serialize_builder():
 def pseudo_dojo(generate_psp8_data):
     """Create an PseudoDojo pseudo potential family from scratch."""
     from aiida.common.constants import elements
-    from aiida.plugins import GroupFactory, DataFactory
+    from aiida.plugins import DataFactory, GroupFactory
 
     PseudoDojo = GroupFactory('pseudo.family.pseudo_dojo')  # pylint: disable=invalid-name
     Psp8Data = DataFactory('pseudo.psp8')
@@ -184,15 +184,20 @@ def generate_calc_job_node(fixture_localhost):
         """Flatten inputs recursively like :meth:`aiida.engine.processes.process::Process._flatten_inputs`."""
         flat_inputs = []
         for key, value in inputs.items():
-            if isinstance(value, collections.Mapping):
+            if isinstance(value, collections.abc.Mapping):
                 flat_inputs.extend(flatten_inputs(value, prefix=prefix + key + '__'))
             else:
                 flat_inputs.append((prefix + key, value))
         return flat_inputs
 
     def _generate_calc_job_node(
-        entry_point_name='base', computer=None, test_name=None, inputs=None, attributes=None, retrieve_temporary=None
-    ):
+        entry_point_name='base',
+        computer=None,
+        test_name=None,
+        inputs=None,
+        attributes=None,
+        retrieve_temporary=None
+    ):  # pylint: disable=too-many-positional-arguments
         """Fixture to generate a mock `CalcJobNode` for testing parsers.
 
         :param entry_point_name: entry point name of the calculation class
@@ -233,10 +238,10 @@ def generate_calc_job_node(fixture_localhost):
             node.set_attribute_many(attributes)
 
         if filepath_folder:
-            from aiida.orm import StructureData
             from abipy.abio.abivars import AbinitInputFile
+            from aiida.orm import StructureData
             try:
-                parsed_input = AbinitInputFile(filepath_input)
+                parsed_input = AbinitInputFile(filepath_input)  # pylint: disable=possibly-used-before-assignment
             except FileNotFoundError:
                 pass
             else:
@@ -288,10 +293,10 @@ def generate_psp8_data():
 
     def _generate_psp8_data(element):
         """Return `Pps8Data` node."""
-        from aiida_pseudo.data.pseudo import Psp8Data
         from aiida.common.constants import elements
+        from aiida_pseudo.data.pseudo import Psp8Data
         try:
-            atomic_number = [number for number in elements if elements[number]['symbol'] == element]
+            atomic_number = [z for z, el in elements.items() if el['symbol'] == element]
             atomic_number = float(atomic_number[0])
         except IndexError as error:
             raise ValueError(f'Could not associate an atomic number to {element}.') from error
@@ -327,7 +332,7 @@ def generate_structure():
             structure.append_atom(position=[-29.3865565, 9.51707929, -4.02515904], symbols='H', name='H')
             structure.append_atom(position=[1.04074437, -1.64320127, -1.27035021], symbols='O', name='O')
         else:
-            raise KeyError('Unknown structure_id=\'{}\''.format(structure_id))
+            raise KeyError(f'Unknown structure_id=\'{structure_id}\'')
         return structure
 
     return _generate_structure
@@ -397,8 +402,8 @@ def generate_bands_data():
 
     def _generate_bands_data():
         """Return a `BandsData` instance with some basic `kpoints` and `bands` arrays."""
-        import numpy
         from aiida.plugins import DataFactory
+        import numpy
         BandsData = DataFactory('array.bands')  # pylint: disable=invalid-name
         bands_data = BandsData()
 
@@ -446,6 +451,7 @@ def generate_inputs_abinit(fixture_code, generate_structure, generate_kpoints_me
     def _generate_inputs_abinit():
         """Generate default inputs for an `AbinitCalculation."""
         from aiida.orm import Dict
+
         from aiida_abinit.utils.resources import get_default_options
 
         inputs = {
@@ -475,8 +481,8 @@ def generate_workchain_abinit(generate_workchain, generate_inputs_abinit, genera
     """Generate an instance of a `AbinitBaseWorkChain`."""
 
     def _generate_workchain_abinit(exit_code=None, inputs=None, return_inputs=False):
-        from plumpy import ProcessState
         from aiida.orm import Dict
+        from plumpy import ProcessState
 
         entry_point = 'abinit.base'
 

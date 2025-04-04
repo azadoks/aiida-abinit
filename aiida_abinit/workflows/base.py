@@ -2,9 +2,10 @@
 """Base Abinit WorkChain implementation."""
 from aiida import orm
 from aiida.common import AttributeDict, exceptions
-from aiida.engine import (BaseRestartWorkChain, ProcessHandlerReport, process_handler, while_)
+from aiida.engine import BaseRestartWorkChain, ProcessHandlerReport, process_handler, while_
 from aiida.plugins import CalculationFactory
-from aiida_abinit.utils import (create_kpoints_from_distance, validate_and_prepare_pseudos_inputs)
+
+from aiida_abinit.utils import create_kpoints_from_distance, validate_and_prepare_pseudos_inputs
 
 AbinitCalculation = CalculationFactory('abinit')
 
